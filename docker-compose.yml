@@ -1,0 +1,54 @@
+version: '2'
+services:
+  phpmyadmin:
+    build: ./phpmyadmin
+    image: phpmyadmin
+    hostname: phpmyadmin
+    env_file: 
+      - env/config.env
+    ports:
+      - "8081:80"
+    links:
+      - percona
+    networks:
+      - default
+  librenms:
+    build : ./librenms
+    image: librenms
+    hostname: librenms
+    env_file:
+      - env/librenms.env
+    ports:
+      - "8080:80"
+      - "8443:443"
+    links:
+      - percona
+    volumes:
+      - "./dockerlibrenms/opt/librenms/logs:/opt/librenms/logs:rw"
+      - "./dockerlibrenms/opt/librenms/rrd:/opt/librenms/rrd:rw"
+      - "./dockerlibrenms/etc/nginx/ssl:/etc/nginx/ssl:rw"
+      - "./dockerlibrenms/opt/librenms/config.custom.php:/opt/librenms/config.custom.php:rw"
+    networks:
+      - default
+    dns_search:
+      - librenms
+  percona:
+    build: ./percona
+    image: percona
+    hostname: percona
+    env_file:
+      - env/config.env
+    expose:
+      - "3306"
+    volumes:
+      - "./dockerlibrenms/var/lib/mysql:/var/lib/mysql:rw"
+    networks:
+      - default
+    dns_search:
+      - percona
+volumes:
+  percona: {}
+  librenms: {}
+  phpmyadmin: {}
+networks:
+  default: {}
